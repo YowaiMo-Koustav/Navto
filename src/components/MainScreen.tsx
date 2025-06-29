@@ -3,8 +3,7 @@ import { useState, useEffect } from 'react';
 import { UserCircle2 } from 'lucide-react';
 import { Button } from './ui/button';
 import AccountModal from './AccountModal';
-import VoiceAssistant from './VoiceAssistant';
-import MapView from './MapView';
+import dynamic from 'next/dynamic';
 import ServiceAlerts from './ServiceAlerts';
 import TransitList from './TransitList';
 import type { ServiceAlert, TransitDeparture } from '@/types';
@@ -12,6 +11,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { getRealtimeAlerts, getDepartures } from '@/services/firestoreService';
 import { Skeleton } from './ui/skeleton';
 
+const MapViewComponent = dynamic(() => import('./MapView'), { ssr: false });
 
 export default function MainScreen() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -21,8 +21,21 @@ export default function MainScreen() {
   const [departures, setDepartures] = useState<TransitDeparture[]>([]);
   const [relevantAlerts, setRelevantAlerts] = useState<ServiceAlert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [stops, setStops] = useState<{ name: string; position: [number, number] }[]>([]);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
   useEffect(() => {
+    // Get user location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserLocation([pos.coords.latitude, pos.coords.longitude]);
+        },
+        () => {},
+        { enableHighAccuracy: true }
+      );
+    }
+
     const unsubscribe = getRealtimeAlerts((alerts) => {
       setAllAlerts(alerts);
       setRelevantAlerts(alerts); // Initially show all alerts
@@ -32,6 +45,14 @@ export default function MainScreen() {
     const fetchDepartures = async () => {
       const fetchedDepartures = await getDepartures();
       setDepartures(fetchedDepartures);
+      // Filter for stops with lat/lng and city === 'Howrah'
+      const stopsData = fetchedDepartures
+        .filter(dep => typeof dep.lat === 'number' && typeof dep.lng === 'number' && (dep as any).city === 'Howrah')
+        .map(dep => ({
+          name: `${dep.route} → ${dep.destination}`,
+          position: [dep.lat, dep.lng] as [number, number],
+        }));
+      setStops(stopsData);
       if (isLoading) setIsLoading(false);
     };
 
@@ -55,22 +76,6 @@ export default function MainScreen() {
   return (
     <div className="relative flex size-full min-h-screen flex-col bg-background text-foreground">
       <div className="flex-grow pb-16">
-        <header className="sticky top-0 z-20 flex items-center justify-end p-4 bg-background/80 backdrop-blur-md">
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            variant="ghost"
-            size="icon"
-            className="rounded-full"
-            aria-label="Open account menu"
-          >
-            <UserCircle2 className="h-7 w-7 text-foreground" />
-          </Button>
-        </header>
-
-        <VoiceAssistant allAlerts={allAlerts} setRelevantAlerts={setRelevantAlerts} />
-        
-        <MapView />
-
         <div className="px-4 mt-3">
           <h2 className="font-headline text-foreground text-xl font-semibold leading-tight tracking-tight mb-4">
             Next Departures & Alerts

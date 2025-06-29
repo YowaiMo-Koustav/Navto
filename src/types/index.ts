@@ -16,4 +16,6 @@ export interface TransitDeparture {
   time: string;
   status: 'On Time' | 'Delayed';
   delay?: string;
+  lat: number;
+  lng: number;
 }

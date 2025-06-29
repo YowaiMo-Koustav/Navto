@@ -1,0 +1,5 @@
+omnidimension
+fastapi
+uvicorn
+python-dotenv
+google-cloud-firestore
