@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UserCircle2 } from 'lucide-react';
 import { Button } from './ui/button';
 import AccountModal from './AccountModal';
@@ -9,24 +9,37 @@ import ServiceAlerts from './ServiceAlerts';
 import TransitList from './TransitList';
 import type { ServiceAlert, TransitDeparture } from '@/types';
 import { useAuth } from '@/hooks/use-auth';
+import { getRealtimeAlerts, getDepartures } from '@/services/firestoreService';
+import { Skeleton } from './ui/skeleton';
 
-// Mock Data
-const initialAlerts: ServiceAlert[] = [
-  { id: '1', severity: 'warning', title: 'Service Alert: Route 22', message: 'Detour due to construction on Main St. Expect delays.' },
-  { id: '2', severity: 'info', title: 'Weekend Schedule', message: 'All train lines will run on a Sunday schedule this weekend.' },
-];
-
-const departures: TransitDeparture[] = [
-  { id: '1', type: 'bus', time: '10:15 AM', route: 'Route 22', destination: 'To Downtown Station', status: 'On Time' },
-  { id: '2', type: 'train', time: '10:20 AM', route: 'Metro Line B', destination: 'To Northwood Mall', status: 'Delayed', delay: '5 min' },
-  { id: '3', type: 'bus', time: '10:25 AM', route: 'Route 45', destination: 'To University Campus', status: 'On Time' },
-];
 
 export default function MainScreen() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [relevantAlerts, setRelevantAlerts] = useState<ServiceAlert[]>(initialAlerts);
   const { user } = useAuth();
   
+  const [allAlerts, setAllAlerts] = useState<ServiceAlert[]>([]);
+  const [departures, setDepartures] = useState<TransitDeparture[]>([]);
+  const [relevantAlerts, setRelevantAlerts] = useState<ServiceAlert[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = getRealtimeAlerts((alerts) => {
+      setAllAlerts(alerts);
+      setRelevantAlerts(alerts); // Initially show all alerts
+      if (isLoading) setIsLoading(false);
+    });
+
+    const fetchDepartures = async () => {
+      const fetchedDepartures = await getDepartures();
+      setDepartures(fetchedDepartures);
+      if (isLoading) setIsLoading(false);
+    };
+
+    fetchDepartures();
+
+    return () => unsubscribe();
+  }, [isLoading]);
+
   // A real user object would be passed here. For the demo, we are using a mock
   // based on the user's Firebase Auth details.
   const demoUser = user ? {
@@ -54,7 +67,7 @@ export default function MainScreen() {
           </Button>
         </header>
 
-        <VoiceAssistant allAlerts={initialAlerts} setRelevantAlerts={setRelevantAlerts} />
+        <VoiceAssistant allAlerts={allAlerts} setRelevantAlerts={setRelevantAlerts} />
         
         <MapView />
 
@@ -62,8 +75,18 @@ export default function MainScreen() {
           <h2 className="font-headline text-foreground text-xl font-semibold leading-tight tracking-tight mb-4">
             Next Departures & Alerts
           </h2>
-          <ServiceAlerts alerts={relevantAlerts} />
-          <TransitList departures={departures} />
+          {isLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+            </div>
+          ) : (
+            <>
+              <ServiceAlerts alerts={relevantAlerts} />
+              <TransitList departures={departures} />
+            </>
+          )}
         </div>
         <div className="h-8"></div>
       </div>
