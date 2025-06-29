@@ -24,6 +24,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
+      // Don't show an error if the user closes the popup
+      if (error.code === 'auth/popup-closed-by-user') {
+        return;
+      }
       console.error('Error signing in with Google:', error);
       let description = "Could not sign in with Google. Please try again.";
       if (error.code === 'auth/unauthorized-domain') {
