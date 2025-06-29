@@ -4,7 +4,7 @@ import { AuthProvider } from '@/components/AuthProvider';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'TransitWise',
+  title: 'NavAI',
   description: 'Your public transit crisis navigator.',
 };
 

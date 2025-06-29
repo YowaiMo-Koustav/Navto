@@ -30,7 +30,7 @@ const prompt = ai.definePrompt({
   name: 'answerTransitQuestionPrompt',
   input: {schema: AnswerTransitQuestionInputSchema},
   output: {schema: AnswerTransitQuestionOutputSchema},
-  prompt: `You are a helpful AI voice agent for a public transit app called TransitWise.
+  prompt: `You are a helpful AI voice agent for a public transit app called NavAI.
   A user has asked the following question about transit:
   {{question}}
 

@@ -13,14 +13,14 @@ export default function Login() {
         <div className="container mx-auto px-4 py-5 flex items-center justify-center">
           <div className="flex items-center gap-3">
             <AppLogo />
-            <h1 className="font-headline text-foreground text-3xl font-semibold tracking-tight">TransitWise</h1>
+            <h1 className="font-headline text-foreground text-3xl font-semibold tracking-tight">NavAI</h1>
           </div>
         </div>
       </header>
       <main className="flex-grow flex flex-col items-center justify-center px-4 py-8 text-center">
         <div className="bg-card p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-md">
           <h2 className="font-headline text-foreground text-3xl font-medium mb-3">Welcome!</h2>
-          <p className="text-muted-foreground text-base mb-10">Sign in to get started with your transit journey.</p>
+          <p className="text-muted-foreground text-base mb-10">Sign in to get started with your perfect journey.</p>
           <Button
             onClick={signInWithGoogle}
             className="w-full h-auto flex items-center justify-center gap-3 py-3.5 px-4 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-card transition-colors duration-200 ease-in-out shadow-md hover:shadow-lg"
@@ -35,7 +35,7 @@ export default function Login() {
       </main>
       <footer className="py-6">
         <p className="text-center text-sm text-muted-foreground">
-          TransitWise © 2024
+          NavAI © 2024
         </p>
       </footer>
     </div>
